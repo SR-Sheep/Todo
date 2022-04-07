@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -109,6 +110,39 @@ public class TodoController {
 		//6) ResponseDTO 리턴
 		return ResponseEntity.ok().body(response);
 	}
+	
+	//삭제
+	@DeleteMapping
+	public ResponseEntity<?> deleteTodo(@RequestBody TodoDTO dto){
+		try {
+			String temporaryUserId = "temporary-user"; //임시 유저 아이디
+			
+			//1) TodoEntity 변경
+			TodoEntity entity = TodoDTO.toEntity(dto);
+			
+			//2) 임시 사용자 아이디 설정
+			entity.setUser(temporaryUserId);
+			
+			//3) 서비스를 이용하여 entity 삭제
+			List<TodoEntity> entities = service.delete(entity);
+			
+			//4) 자바 스트림을 이용하여 리턴된 엔티티 리스트를 TodoDTO 리스트로 변환한다
+			List<TodoDTO> dtos = entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+			
+			//5) 변환된 TodoDTO 리스트를 이용하여 ResponseDTO 초기화
+			ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().data(dtos).build();
+			
+			//6) ResponseDTO 리턴
+			return ResponseEntity.ok().body(response);
+			
+		}catch (Exception e) {
+			//7) 예외가 있는 경우 dto 대신 error 메세지 넣어 출력
+			String error = e.getMessage();
+			ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().error(error).build();
+			return ResponseEntity.badRequest().body(response);
+		}
+	}
+	
 	
 	
 }
