@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,18 +27,18 @@ public class UserController {
 	@Autowired
 	private TokenProvider tokenProvider;
 	
+	//패스워드 암호와를 위한 엔코더
+	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	
 	//회원 가입
 	@PostMapping("/signup")
 	public ResponseEntity<?> responseUser(@RequestBody UserDTO userDTO){
 		try {
 			//요청을 이용해 저장할 사용자 만들기
-			
-			log.info(userDTO.getPassword());
-			
 			UserEntity user = UserEntity.builder()
 					.email(userDTO.getEmail())
 					.user(userDTO.getUser())
-					.password(userDTO.getPassword())
+					.password(passwordEncoder.encode(userDTO.getPassword())) //비밀번호를 엔코더해서 저장
 					.build();
 			
 			log.info(userDTO.getPassword());
@@ -48,7 +50,6 @@ public class UserController {
 					.email(registeredUser.getEmail())
 					.id(registeredUser.getId())
 					.user(registeredUser.getUser())
-					.password(registeredUser.getPassword())
 					.build();
 			//ok 리턴
 			return ResponseEntity.ok().body(responsedUser);
@@ -63,14 +64,14 @@ public class UserController {
 	//로그인
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO){
-		UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword());
+		UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword(),passwordEncoder);
 		if(user!=null) {
 			//토큰 생성
 			final String token = tokenProvider.create(user);
 			final UserDTO responseUserDTO = UserDTO.builder()
 					.email(user.getEmail())
 					.id(user.getId())
-					.user(user.getUser())
+//					.user(user.getUser())
 					.token(token)
 					.build();
 			return ResponseEntity.ok(responseUserDTO);

@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.UserEntity;
@@ -31,8 +32,12 @@ public class UserService {
 		return userRepository.save(userEntity);
 	}
 	
-	public UserEntity getByCredentials(final String email, final String password) {
-		//이메일과 암호 일치하는 유저 엔티티 리턴
-		return userRepository.findByEmailAndPassword(email, password);
+	public UserEntity getByCredentials(final String email, final String password, final PasswordEncoder encoder) {
+		final UserEntity originalUser=userRepository.findByEmail(email);
+		//matches 메서드 이용하여 salt를 고려하여 패스워드가 같은지 확인
+		if(originalUser!=null&&encoder.matches(password, originalUser.getPassword())) {
+			return originalUser;
+		}
+		return null;
 	}
 }
