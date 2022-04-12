@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +33,7 @@ public class UserService {
 		//모두 통과시, 저장
 		return userRepository.save(userEntity);
 	}
-	
+	//인증
 	public UserEntity getByCredentials(final String email, final String password, final PasswordEncoder encoder) {
 		final UserEntity originalUser=userRepository.findByEmail(email);
 		//matches 메서드 이용하여 salt를 고려하여 패스워드가 같은지 확인
@@ -39,5 +41,10 @@ public class UserService {
 			return originalUser;
 		}
 		return null;
+	}
+	
+	//모든 유저 보기
+	public List<UserEntity> getAllUserInfo(){
+		return userRepository.findAll();
 	}
 }

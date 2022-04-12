@@ -1,5 +1,8 @@
 package com.example.demo.dto;
 
+import com.example.demo.model.TodoEntity;
+import com.example.demo.model.UserEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +18,10 @@ public class UserDTO {
 	private String user;
 	private String password;
 	private String id;
+	
+	public UserDTO(final UserEntity entity) {
+		this.email = entity.getEmail();
+		this.user = entity.getUser();
+	}
+	
 }

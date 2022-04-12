@@ -1,15 +1,20 @@
 package com.example.demo.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ResponseDTO;
+import com.example.demo.dto.TodoDTO;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.model.UserEntity;
 import com.example.demo.security.TokenProvider;
@@ -64,6 +69,7 @@ public class UserController {
 	//로그인
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO){
+		log.info("/signin running...");
 		UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword(),passwordEncoder);
 		if(user!=null) {
 			//토큰 생성
@@ -81,7 +87,15 @@ public class UserController {
 					.build();
 			return ResponseEntity.badRequest().body(responseDTO);
 		}
-		
+	}
+	
+	//모든 유저 보기
+	@GetMapping("/all")
+	public ResponseEntity<?> allUser(){
+		List<UserEntity> users = userService.getAllUserInfo();
+		List<UserDTO> dtos = users.stream().map(UserDTO::new).collect(Collectors.toList());
+		ResponseDTO<UserDTO> response = ResponseDTO.<UserDTO>builder().data(dtos).build();
+		return ResponseEntity.ok(response);
 		
 	}
 	
